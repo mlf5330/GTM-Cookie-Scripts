@@ -1,0 +1,82 @@
+<script>
+  //function for setting 90 day cookie (until user clears cookies or it's reset)  
+  function set90DayCookie(cname, cvalue) {
+    var d = new Date();
+    d.setTime(d.getTime() + (90 * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/; domain=.peachystudio.com";
+  }
+</script>
+<script>
+  //function for setting 1 day cookie (until user clears cookies or it's reset)  
+  function set1DayCookie(cname, cvalue) {
+    var d = new Date();
+    d.setTime(d.getTime() + (1 * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/; domain=.peachystudio.com";
+  }
+</script>
+<script>
+  var source_value = 'undefined';
+  if ({{Query - utm_source}} != "not set") {
+    source_value = {{Query - utm_source}};
+  } else if ({{Referrer}}.includes(".google.")) {
+    source_value = 'google';
+  } else if ({{Referrer}}.includes('.bing.')) {
+    source_value = 'bing';
+  } else if ({{Referrer}}.includes('yahoo.')) {
+    source_value = 'yahoo';
+  } else if ({{Referrer}}.includes('linkedin')) {
+    source_value = 'linkedin';
+  } else if ({{Referrer}}.includes('facebook')) {
+    source_value = 'facebook';
+  } else if ({{Referrer}}.includes('twitter') || {{Referrer}}.includes('//t.co')) {
+    source_value = 'twitter';
+  } else if ({{Referrer}}.indexOf("peachystudio.com") === -1 && {{Referrer}}.length > 3) {
+    source_value = {{Referrer}};
+  }
+  // Then handle medium
+  var medium_value = 'undefined';
+  if ({{Query - utm_medium}} != "not set") {
+    medium_value = {{Query - utm_medium}};
+  } else if ({{Referrer}}.includes('google.c') || {{Referrer}}.includes('bing.') || {{Referrer}}.includes('yahoo.c') || {{Referrer}}.includes('duckduckgo')) {
+    medium_value = 'organic';
+  } else if ({{Referrer}}.includes('linkedin') || {{Referrer}}.includes('facebook') || {{Referrer}}.includes('twitter') || {{Referrer}}.includes('//t.co')) {
+    medium_value = 'social';
+  } else if ({{Referrer}}.indexOf("peachystudio.com") === -1 && {{Referrer}}.length > 3) {
+    medium_value = 'referral';
+  }
+  // Grab campaign from UTM, if available.
+  var campaign_value = 'undefined';
+  if ({{Query - utm_campaign}} != "not set") {
+    campaign_value = {{Query - utm_campaign}};
+  }
+  // Grab content from utm, if available. 
+  var content_value = 'undefined'
+  if ({{Query - utm_content}} != "not set") {
+    content_value = {{Query - utm_content}};
+  }
+  // Grab term from utm, if available. 
+  var term_value = 'undefined';
+  if ({{Query - utm_term}} != "not set") {
+    term_value = {{Query - utm_term}};
+  }
+  // Corrects for google referrer generalization. Defines as google / cpc if gclid present.
+  if ({{Query - gclid}} != 'not set' || {{Page URL}}.includes("gbraid=") || {{Page URL}}.includes('wbraid')) {
+    source_value = 'google';
+    medium_value = 'cpc';
+  }
+  // Facebook traffic can come in without utms, only fbclid. Define as facebook / social
+  if ({{Query - fbclid}} != 'not set') {
+    source_value = 'facebook';
+    medium_value = 'social';
+  }
+  var cookie_value = content_value;
+  if ({{Cookie - analytics_first_content}} === 'not set') {
+    // never overwrite first touch when it's defined, only set it when not set 
+    set90DayCookie('analytics_first_content', cookie_value);
+  }
+  
+  // always overwrite last touch cookie
+  set1DayCookie('analytics_last_content', cookie_value);
+</script>
